@@ -1,6 +1,5 @@
 // IMPORTS
 const socket = io("/")
-console.log(socket)
 const userGrid = document.getElementById("user-grid");
 
 // SETUP
@@ -9,6 +8,8 @@ const peer = new Peer(undefined, {
     host: "/",
     port: "4000"
 })
+
+const peers = {}
 
 console.log(SESSION_ID) // sessionID set in the session.ejs
 let videoStream;
@@ -23,14 +24,13 @@ video.controls = "controls"
 const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia;
 
 getUserMedia({
-    video: false,
+    video: true,
     audio: true
 }).then(stream => {
     videoStream = stream;
     addVideoStream(video, videoStream)
 
     peer.on("call", call => {
-        console.log("GOT THE CALL")
         call.answer(stream)
         const video = document.createElement("video")
         video.muted = true;
@@ -45,6 +45,9 @@ getUserMedia({
 
 })
 
+socket.on("user-disconnected", userID => {
+    peers[userID] && peers[userID].close()
+})
 
 
 peer.on("open", id => {
@@ -60,6 +63,7 @@ peer.on("open", id => {
 ::::::::::::::::::::::
 */
 const addVideoStream = (video, stream) => {
+    video.controls = "controls"
     video.srcObject = stream;
     video.addEventListener("loadedmetadata", () => {
         video.play();
@@ -74,6 +78,8 @@ const addVideoStream = (video, stream) => {
 */
 const connectToNewUser = (userID, stream) => {
     const call = peer.call(userID, stream)
+    peers[userID] = call; // keep track of peers for disconnecting
+
     const video = document.createElement("video");
     call.on("stream", userVideoStream => {
         addVideoStream(video, userVideoStream)
@@ -82,5 +88,4 @@ const connectToNewUser = (userID, stream) => {
         video.remove()
     })
 
-    
 }

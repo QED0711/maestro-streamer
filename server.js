@@ -36,7 +36,6 @@ app.get("/:sessionID", (req,res) => {
 // SOCKET IO
 io.on("connection", socket => {
     socket.on("join-session", ({sessionID, userID}) => {
-        console.log({sessionID, userID})
         
         socket.join(sessionID);
         socket.to(sessionID).broadcast.emit("user-connected", userID)
