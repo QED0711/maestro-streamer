@@ -17,14 +17,14 @@ let videoStream;
 // AUDIO ELEMENT SETUP
 const video = document.createElement("video")
 
-video.muted = false;
+video.muted = true;
 video.controls = "controls"
 
 // GET USER MEDIA
 const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia;
 
 getUserMedia({
-    video: true,
+    video: false,
     audio: true
 }).then(stream => {
     videoStream = stream;
@@ -33,6 +33,7 @@ getUserMedia({
     peer.on("call", call => {
         call.answer(stream)
         const video = document.createElement("video")
+        video.innerText = "Hello World"
         video.muted = true;
         call.on("stream", userVideoStream => {
             addVideoStream(video, userVideoStream)
