@@ -30,15 +30,16 @@ app.get("/", (req,res) => {
 })
 
 app.get("/:sessionID", (req,res) => {
-    res.render("session", {sessionID: req.params.sessionID})
+    const part = req.query.part
+    res.render("session", {sessionID: req.params.sessionID, part})
 })
 
 // SOCKET IO
 io.on("connection", socket => {
-    socket.on("join-session", ({sessionID, userID}) => {
+    socket.on("join-session", ({sessionID, userID, part}) => {
         
         socket.join(sessionID);
-        socket.to(sessionID).broadcast.emit("user-connected", userID)
+        socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
         
         socket.on("disconnect", () => {
             socket.to(sessionID).broadcast.emit("user-disconnected", userID)

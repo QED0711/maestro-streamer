@@ -1,7 +1,7 @@
 // IMPORTS
 const socket = io("/")
 const userGrid = document.getElementById("user-grid");
-
+console.log(PART)
 // SETUP
 const peer = new Peer(undefined, {
     path: "/peerjs",
@@ -24,7 +24,7 @@ video.controls = "controls"
 const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia;
 
 getUserMedia({
-    video: false,
+    video: true,
     audio: true
 }).then(stream => {
     videoStream = stream;
@@ -40,8 +40,8 @@ getUserMedia({
         })
     })
 
-    socket.on("user-connected", userID => {
-        connectToNewUser(userID, stream)
+    socket.on("user-connected", ({userID, part}) => {
+        connectToNewUser(userID, stream, part)
     })
 
 })
@@ -53,7 +53,7 @@ socket.on("user-disconnected", userID => {
 
 peer.on("open", id => {
     console.log(id)
-    socket.emit("join-session", {sessionID: SESSION_ID, userID: id})
+    socket.emit("join-session", {sessionID: SESSION_ID, userID: id, part: PART})
 })
 
 
@@ -63,13 +63,27 @@ peer.on("open", id => {
 :: ADD AUDIO STREAM ::
 ::::::::::::::::::::::
 */
-const addVideoStream = (video, stream) => {
+const addVideoStream = (video, stream, part=PART) => {
     video.controls = "controls"
     video.srcObject = stream;
+
     video.addEventListener("loadedmetadata", () => {
         video.play();
     })
-    userGrid.append(video)
+
+    const videoContainer = document.createElement("div")
+    videoContainer.setAttribute("class", "video-container")
+    userGrid.append(videoContainer)
+
+    const header = document.createElement("p")
+    header.innerText = part
+    header.setAttribute("class", "video-part")
+
+    videoContainer.append(header)
+    videoContainer.append(video)
+
+    // userGrid.append(video)
+
 }
 
 /* 
@@ -77,13 +91,13 @@ const addVideoStream = (video, stream) => {
 :: CONNECT TO NEW USER ::
 :::::::::::::::::::::::::
 */
-const connectToNewUser = (userID, stream) => {
+const connectToNewUser = (userID, stream, part) => {
     const call = peer.call(userID, stream)
     peers[userID] = call; // keep track of peers for disconnecting
 
     const video = document.createElement("video");
     call.on("stream", userVideoStream => {
-        addVideoStream(video, userVideoStream)
+        addVideoStream(video, userVideoStream, part)
     })
     call.on("close", () => {
         video.remove()
