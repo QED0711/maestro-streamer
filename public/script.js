@@ -19,7 +19,6 @@ let videoStream;
 const video = document.createElement("video")
 
 video.muted = true;
-video.controls = "controls"
 
 // GET USER MEDIA
 navigator.mediaDevices.getUserMedia({
@@ -43,7 +42,7 @@ navigator.mediaDevices.getUserMedia({
         const answer = call.answer(stream)
         console.log(answer)
         const video = document.createElement("video")
-        video.muted = true;
+        // video.muted = true;
 
 
         call.on("stream", userVideoStream => {
@@ -112,19 +111,48 @@ const addVideoStream = (video, stream, part) => {
         video.play();
     })
 
+    // CONTROLS
+    // const controlsContainer = document.createElement("div")
+    // controlsContainer.setAttribute("class", "controls-container")
+
+    // const muteButton = document.createElement("button");
+    // muteButton.setAttribute("class", "mute-btn")
+    // muteButton.innerText = video.muted ? "Unmute" : "Mute"
+    // muteButton.addEventListener("click", function(e){
+    //     video.muted = !video.muted
+    //     e.target.innerText = video.muted ? "Unmute" : "Mute"
+    // })
+    // muteButton.style.display = "none"
+
+    
+    // VIDEO CONTAINER
     const videoContainer = document.createElement("div")
     videoContainer.setAttribute("class", "video-container")
     videoContainer.setAttribute("id", stream.id)
-    userGrid.append(videoContainer)
+    videoContainer.addEventListener("mouseenter", function(e){
+        console.log(e.target.id)
+        // controlsContainer.style.display = "inline-block"
+        controlsContainer.style.opacity = 1.0
+    })
+    videoContainer.addEventListener("mouseleave", function(e){
+        // controlsContainer.style.display = "none"
+        controlsContainer.style.opacity = 0;
 
+    })
+    
+    userGrid.append(videoContainer)
+    
     const header = document.createElement("p")
     header.innerText = part || "--"
     header.setAttribute("class", "video-part")
     header.setAttribute("id", `header-${stream.id}`)
-
+    
     videoContainer.append(header)
     videoContainer.append(video)
 
+    // videoContainer.append(controlsContainer)
+    // controlsContainer.append(muteButton)
+    
     // userGrid.append(video)
 
 }
