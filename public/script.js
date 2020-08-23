@@ -22,13 +22,11 @@ video.muted = true;
 video.controls = "controls"
 
 // GET USER MEDIA
-const getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia;
-
-getUserMedia({
+navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
-
+    console.log("GOT USER MEDIA")
     videoStream = stream;
     addVideoStream(video, stream, PART) // for the user's own video stream
 
