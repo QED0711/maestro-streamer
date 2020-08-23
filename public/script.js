@@ -1,7 +1,6 @@
 // IMPORTS
 const socket = io("/")
 const userGrid = document.getElementById("user-grid");
-console.log(PART)
 // SETUP
 const peer = new Peer(undefined, {
     path: "/peerjs",
@@ -10,6 +9,7 @@ const peer = new Peer(undefined, {
 })
 
 const peers = {}
+const seenStreams = {}
 
 console.log(SESSION_ID) // sessionID set in the session.ejs
 let videoStream;
@@ -27,16 +27,26 @@ getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
+    
     videoStream = stream;
-    addVideoStream(video, videoStream)
+    addVideoStream(video, stream, PART) // for the users own video stream
 
     peer.on("call", call => {
+        stream.data = {part:PART}
         call.answer(stream)
-        const video = document.createElement("video")
-        video.innerText = "Hello World"
+        const video = document.createElement("video")        
         video.muted = true;
+
         call.on("stream", userVideoStream => {
+            // userVideoStreams are from users who were already connected
+            socket.emit("request-user-data", {streamID: userVideoStream.id}) // requests data from the user based on their stream id
             addVideoStream(video, userVideoStream)
+        })
+
+        call.on("close", () => {
+            console.log("REMOVING")
+            video.parentElement.remove()
+            // video.remove()
         })
     })
 
@@ -44,6 +54,18 @@ getUserMedia({
         connectToNewUser(userID, stream, part)
     })
 
+    socket.on("data-requested", (data) => { // responds to data requests based on own stream id
+        if(data.streamID === stream.id){
+            socket.emit("data-response", {streamID: stream.id, part: PART})
+        }
+    })
+
+})
+
+
+socket.on("user-data-response", data => {
+    const header = document.getElementById(`header-${data.streamID}`)
+    header.innerText = data.part
 })
 
 socket.on("user-disconnected", userID => {
@@ -52,7 +74,7 @@ socket.on("user-disconnected", userID => {
 
 
 peer.on("open", id => {
-    console.log(id)
+    
     socket.emit("join-session", {sessionID: SESSION_ID, userID: id, part: PART})
 })
 
@@ -63,7 +85,13 @@ peer.on("open", id => {
 :: ADD AUDIO STREAM ::
 ::::::::::::::::::::::
 */
-const addVideoStream = (video, stream, part=PART) => {
+const addVideoStream = (video, stream, part) => {
+    console.log("ADDING VIDEO STREAM")
+    // prevents function from getting called twice on same stream
+    if(seenStreams[stream.id]) return
+
+    seenStreams[stream.id] = true;
+    
     video.controls = "controls"
     video.srcObject = stream;
 
@@ -73,11 +101,13 @@ const addVideoStream = (video, stream, part=PART) => {
 
     const videoContainer = document.createElement("div")
     videoContainer.setAttribute("class", "video-container")
+    videoContainer.setAttribute("id", stream.id)
     userGrid.append(videoContainer)
 
     const header = document.createElement("p")
-    header.innerText = part
+    header.innerText = part || "--"
     header.setAttribute("class", "video-part")
+    header.setAttribute("id", `header-${stream.id}`)
 
     videoContainer.append(header)
     videoContainer.append(video)
@@ -92,6 +122,7 @@ const addVideoStream = (video, stream, part=PART) => {
 :::::::::::::::::::::::::
 */
 const connectToNewUser = (userID, stream, part) => {
+    console.log("CONNECT TO NEW USER", part)
     const call = peer.call(userID, stream)
     peers[userID] = call; // keep track of peers for disconnecting
 
@@ -100,7 +131,9 @@ const connectToNewUser = (userID, stream, part) => {
         addVideoStream(video, userVideoStream, part)
     })
     call.on("close", () => {
-        video.remove()
+        console.log("REMOVING")
+        video.parentElement.remove()
+        // video.remove()
     })
 
 }

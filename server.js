@@ -41,8 +41,19 @@ io.on("connection", socket => {
         socket.join(sessionID);
         socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
         
+
+
         socket.on("disconnect", () => {
             socket.to(sessionID).broadcast.emit("user-disconnected", userID)
+        })
+
+
+        socket.on("request-user-data", data => {
+            socket.to(sessionID).broadcast.emit("data-requested", data)
+        })
+
+        socket.on("data-response", data => {
+            socket.to(sessionID).broadcast.emit("user-data-response", data)
         })
     })
 })
