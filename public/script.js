@@ -21,9 +21,16 @@ const video = document.createElement("video")
 video.muted = true;
 
 // GET USER MEDIA
+// See constraints properties:
+// https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
 navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
+    video: false,
+    audio: {
+        autoGainControl: false,
+        echoCancellation: false,
+        noiseSuppression: false,
+        sampleSize: 8,
+    }
 }).then(stream => {
     console.log("GOT USER MEDIA")
     videoStream = stream;
