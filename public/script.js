@@ -5,7 +5,8 @@ const userGrid = document.getElementById("user-grid");
 const peer = new Peer(undefined, {
     path: "/peerjs",
     host: "/",
-    port: "4000"
+    port: "4000",
+    // debug: 3
 })
 
 const peers = {}
@@ -27,23 +28,29 @@ getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
-    
+
     videoStream = stream;
-    addVideoStream(video, stream, PART) // for the users own video stream
+    addVideoStream(video, stream, PART) // for the user's own video stream
+
+    const handlePageUnload = e => {
+        socket.emit("user-leaving", {streamID: stream.id, part: PART})
+    }
+
+    // if the session the person who started the session leaves, these unload event handlers will inform other session members of their departure so they can clean up any stale user data.
+    window.addEventListener("unload", handlePageUnload)
+    window.addEventListener("beforeunload", handlePageUnload)
 
     peer.on("call", call => {
-        console.log("PEER ON CALL")
-        
-        stream.data = {part:PART}
-        call.answer(stream)
-        const video = document.createElement("video")        
+
+        const answer = call.answer(stream)
+        console.log(answer)
+        const video = document.createElement("video")
         video.muted = true;
 
-        
+
         call.on("stream", userVideoStream => {
-            console.log("CALL ON STREAM")
             // userVideoStreams are from users who were already connected
-            socket.emit("request-user-data", {streamID: userVideoStream.id}) // requests data from the user based on their stream id
+            socket.emit("request-user-data", { streamID: userVideoStream.id }) // requests data from the user based on their stream id
             addVideoStream(video, userVideoStream)
         })
 
@@ -54,13 +61,13 @@ getUserMedia({
         })
     })
 
-    socket.on("user-connected", ({userID, part}) => {
+    socket.on("user-connected", ({ userID, part }) => {
         connectToNewUser(userID, stream, part)
     })
 
     socket.on("data-requested", (data) => { // responds to data requests based on own stream id
-        if(data.streamID === stream.id){
-            socket.emit("data-response", {streamID: stream.id, part: PART})
+        if (data.streamID === stream.id) {
+            socket.emit("data-response", { streamID: stream.id, part: PART })
         }
     })
 
@@ -76,9 +83,15 @@ socket.on("user-disconnected", userID => {
     peers[userID] && peers[userID].close()
 })
 
+socket.on("remove-stale-user", data => {
+    console.log("WILL REMOVE STALE USER")
+    const staleStream = document.getElementById(data.streamID)
+    staleStream.remove()
+})
 
-peer.on("open", id => {    
-    socket.emit("join-session", {sessionID: SESSION_ID, userID: id, part: PART})
+
+peer.on("open", id => {
+    socket.emit("join-session", { sessionID: SESSION_ID, userID: id, part: PART })
 })
 
 
@@ -89,12 +102,11 @@ peer.on("open", id => {
 ::::::::::::::::::::::
 */
 const addVideoStream = (video, stream, part) => {
-    console.log("ADDING VIDEO STREAM")
     // prevents function from getting called twice on same stream
-    if(seenStreams[stream.id]) return
+    if (seenStreams[stream.id]) return
 
     seenStreams[stream.id] = true;
-    
+
     video.controls = "controls"
     video.srcObject = stream;
 
@@ -125,27 +137,27 @@ const addVideoStream = (video, stream, part) => {
 :::::::::::::::::::::::::
 */
 const connectToNewUser = async (userID, stream, part) => {
-    console.log("CONNECT TO NEW USER", part)
-    
-    setTimeout(() => {
-        const call = peer.call(userID, stream)
-        peers[userID] = call; // keep track of peers for disconnecting
 
-    call.on("open", () => {console.log("CALL IS OPEN")})
+    // setTimeout(() => {
+    const call = peer.call(userID, stream)
+    peers[userID] = call; // keep track of peers for disconnecting
+    console.log(call.open)
+    console.log(call)
+    // call.on("open", () => {console.log("CALL IS OPEN")})
 
-        // debugger
+    // debugger
 
-        const video = document.createElement("video");
-        call.on("stream", userVideoStream => {
-            addVideoStream(video, userVideoStream, part)
-        })
-        call.on("close", () => {
-            console.log("REMOVING")
-            video.parentElement.remove()
-            // video.remove()
-        })
+    const video = document.createElement("video");
+    call.on("stream", userVideoStream => {
+        addVideoStream(video, userVideoStream, part)
+    })
+    call.on("close", () => {
+        console.log("REMOVING")
+        video.parentElement.remove()
+        // video.remove()
+    })
 
-    }, 2000)
+    // }, 2000)
 
 
 }

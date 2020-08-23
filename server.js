@@ -39,9 +39,13 @@ io.on("connection", socket => {
     socket.on("join-session", ({sessionID, userID, part}) => {
         
         socket.join(sessionID);
-        socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
+        setTimeout(() => {
+            socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
+        }, 3000)
         
-
+        socket.on("user-leaving", data => {
+            socket.to(sessionID).broadcast.emit("remove-stale-user", {...data})
+        })
 
         socket.on("disconnect", () => {
             socket.to(sessionID).broadcast.emit("user-disconnected", userID)
