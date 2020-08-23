@@ -32,12 +32,16 @@ getUserMedia({
     addVideoStream(video, stream, PART) // for the users own video stream
 
     peer.on("call", call => {
+        console.log("PEER ON CALL")
+        
         stream.data = {part:PART}
         call.answer(stream)
         const video = document.createElement("video")        
         video.muted = true;
 
+        
         call.on("stream", userVideoStream => {
+            console.log("CALL ON STREAM")
             // userVideoStreams are from users who were already connected
             socket.emit("request-user-data", {streamID: userVideoStream.id}) // requests data from the user based on their stream id
             addVideoStream(video, userVideoStream)
@@ -73,8 +77,7 @@ socket.on("user-disconnected", userID => {
 })
 
 
-peer.on("open", id => {
-    
+peer.on("open", id => {    
     socket.emit("join-session", {sessionID: SESSION_ID, userID: id, part: PART})
 })
 
@@ -121,19 +124,28 @@ const addVideoStream = (video, stream, part) => {
 :: CONNECT TO NEW USER ::
 :::::::::::::::::::::::::
 */
-const connectToNewUser = (userID, stream, part) => {
+const connectToNewUser = async (userID, stream, part) => {
     console.log("CONNECT TO NEW USER", part)
-    const call = peer.call(userID, stream)
-    peers[userID] = call; // keep track of peers for disconnecting
+    
+    setTimeout(() => {
+        const call = peer.call(userID, stream)
+        peers[userID] = call; // keep track of peers for disconnecting
 
-    const video = document.createElement("video");
-    call.on("stream", userVideoStream => {
-        addVideoStream(video, userVideoStream, part)
-    })
-    call.on("close", () => {
-        console.log("REMOVING")
-        video.parentElement.remove()
-        // video.remove()
-    })
+    call.on("open", () => {console.log("CALL IS OPEN")})
+
+        // debugger
+
+        const video = document.createElement("video");
+        call.on("stream", userVideoStream => {
+            addVideoStream(video, userVideoStream, part)
+        })
+        call.on("close", () => {
+            console.log("REMOVING")
+            video.parentElement.remove()
+            // video.remove()
+        })
+
+    }, 2000)
+
 
 }
