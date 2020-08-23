@@ -129,16 +129,16 @@ const addVideoStream = (video, stream, part) => {
     const videoContainer = document.createElement("div")
     videoContainer.setAttribute("class", "video-container")
     videoContainer.setAttribute("id", stream.id)
-    videoContainer.addEventListener("mouseenter", function(e){
-        console.log(e.target.id)
-        // controlsContainer.style.display = "inline-block"
-        controlsContainer.style.opacity = 1.0
-    })
-    videoContainer.addEventListener("mouseleave", function(e){
-        // controlsContainer.style.display = "none"
-        controlsContainer.style.opacity = 0;
+    // videoContainer.addEventListener("mouseenter", function(e){
+    //     console.log(e.target.id)
+    //     // controlsContainer.style.display = "inline-block"
+    //     controlsContainer.style.opacity = 1.0
+    // })
+    // videoContainer.addEventListener("mouseleave", function(e){
+    //     // controlsContainer.style.display = "none"
+    //     controlsContainer.style.opacity = 0;
 
-    })
+    // })
     
     userGrid.append(videoContainer)
     
