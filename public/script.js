@@ -29,7 +29,7 @@ navigator.mediaDevices.getUserMedia({
         autoGainControl: false,
         echoCancellation: false,
         noiseSuppression: false,
-        sampleSize: 8,
+        sampleSize: 512,
     }
 }).then(stream => {
     console.log("GOT USER MEDIA")

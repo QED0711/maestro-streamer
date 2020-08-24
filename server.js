@@ -36,6 +36,9 @@ app.get("/:sessionID", (req,res) => {
 
 // SOCKET IO
 io.on("connection", socket => {
+    socket.on("hello", () => {
+        socket.emit("world", {message:"This is a message from the server socket"})
+    })
     socket.on("join-session", ({sessionID, userID, part}) => {
         
         socket.join(sessionID);
