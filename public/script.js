@@ -24,7 +24,7 @@ video.muted = true;
 // See constraints properties:
 // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
 navigator.mediaDevices.getUserMedia({
-    video: false,
+    video: true,
     audio: {
         autoGainControl: false,
         echoCancellation: false,
