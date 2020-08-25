@@ -27,7 +27,7 @@ navigator.mediaDevices.getUserMedia({
     video: true,
     audio: {
         autoGainControl: false,
-        echoCancellation: false,
+        echoCancellation: true,
         noiseSuppression: false,
         sampleSize: 512,
     }
