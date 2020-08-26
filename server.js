@@ -36,17 +36,27 @@ app.get("/:sessionID", (req,res) => {
 
 // SOCKET IO
 io.on("connection", socket => {
-    socket.on("hello", () => {
-        socket.emit("world", {message:"This is a message from the server socket"})
-    })
+    console.log("CONNECTION")
+    // socket.on("hello", () => {
+    //     socket.emit("world", {message:"This is a message from the server socket"})
+    // })
+
+    
     socket.on("join-session", ({sessionID, userID, part}) => {
         
         socket.join(sessionID);
-        setTimeout(() => {
-            socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
-        }, 3000)
+        // setTimeout(() => {
+        //     socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
+        // }, 3000)
         
+        socket.on("ring", ({sessionID, userID}) => {
+            console.log({userID, sessionID})
+            // for continuous ringing
+            socket.to(sessionID).broadcast.emit("user-connected", {userID})
+        })
+
         socket.on("user-leaving", data => {
+            console.log("USER LEAVING")
             socket.to(sessionID).broadcast.emit("remove-stale-user", {...data})
         })
 
