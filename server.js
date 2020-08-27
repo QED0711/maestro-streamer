@@ -2,14 +2,13 @@ const fs = require('fs');
 const express = require("express")
 const app = express()
 const cors = require("cors");
+const path = require("path")
 
-const server = require("https").createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert'),
-}, app)
+const server = require("http").createServer(app)
+
 
 // const server = require('http').Server(app)
-const io = require("socket.io")(server, {origins: '*:*'})
+const io = require("socket.io")(server)
 const { ExpressPeerServer } = require('peer');
 const peerServer = ExpressPeerServer(server, {
   debug: true
