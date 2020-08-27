@@ -23,6 +23,11 @@ app.use(cors())
 app.use('/peerjs', peerServer)
 app.set("view engine", "ejs")
 app.use(express.static('public'))
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
 
 // ROUTES
 app.get("/", (req,res) => {
