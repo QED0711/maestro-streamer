@@ -53,10 +53,10 @@ io.on("connection", socket => {
         //     socket.to(sessionID).broadcast.emit("user-connected", {userID, part})
         // }, 3000)
         
-        socket.on("ring", ({sessionID, userID}) => {
-            console.log({userID, sessionID})
+        socket.on("ring", ({sessionID, userID, authority}) => {
+            console.log({userID, sessionID, authority})
             // for continuous ringing
-            socket.to(sessionID).broadcast.emit("user-connected", {userID})
+            socket.to(sessionID).broadcast.emit("user-connected", {userID, authority})
         })
 
         socket.on("user-leaving", data => {
