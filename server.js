@@ -59,6 +59,10 @@ io.on("connection", socket => {
             socket.to(sessionID).broadcast.emit("user-connected", {userID, authority})
         })
 
+        socket.on("chat-message", ({name, message}) => {
+            socket.to(sessionID).broadcast.emit("message-received", {name, message})
+        })
+
         socket.on("user-leaving", data => {
             console.log("USER LEAVING")
             socket.to(sessionID).broadcast.emit("remove-stale-user", {...data})
