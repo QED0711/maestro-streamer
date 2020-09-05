@@ -44,7 +44,14 @@ io.on("connection", socket => {
     // socket.on("hello", () => {
     //     socket.emit("world", {message:"This is a message from the server socket"})
     // })
+    socket.on('join-chat-session', ({sessionID}) => {
+        console.log("JOINED CHAT SESSION")
+        socket.join(sessionID)
 
+        socket.on("chat-message", ({name, message}) => {
+            socket.to(sessionID).broadcast.emit("message-received", {name, message})
+        })
+    })
     
     socket.on("join-session", ({sessionID, userID, part}) => {
         
